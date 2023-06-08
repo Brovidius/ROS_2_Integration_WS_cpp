@@ -24,8 +24,6 @@ setup(
     entry_points={
         'console_scripts': [
             'processing = nodecomx.processing_node:main',
-            'receiver = nodecomx.receiver_node:main',
-            'transmitter = nodecomx.transmitter_node:main'
         ],
     },
 )

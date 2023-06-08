@@ -3,8 +3,7 @@
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
-from unetpy import *
-import numpy as np
+
 
 # Import of homemade modules
 import nodecomx.algo as my_algo
@@ -25,7 +24,7 @@ class ProcessingNode(Node):
         # self.ROV_data
         # self.ox_data
 
-        # ROS 2 publishers and subscribers   
+        # ROS 2 publisher and subscriber       
         self.publisher_transmitter = self.create_publisher(String, f'/topic_transmission{modem_name}', 1)
         self.publisher_ROV = self.create_publisher(String, '/odom2', 1)
 
@@ -34,8 +33,16 @@ class ProcessingNode(Node):
         self.subscription_ROV = self.create_subscription(String, '/bluerov2_pid/bluerov2/observer/nlo/odom_ned', self.ROV_callback, 1)
         # self.subscription # To ignore unimportant errors. Recommended by ROS 2 documentation.
 
-    def reception_callback(self, msg):   
-        incoming_message = FP16_converter.Converter.int8_list_to_FP16(msg.data)
+    def reception_callback(self, msg):
+
+        received_message = msg.data
+        if isinstance(received_message[0], str):
+            newData = [int(i) for i in received_message]
+        else:
+            newData = received_message
+
+        incoming_message_to_unsigned = [it + 256 if it <= -1 else it for it in newData]   
+        incoming_message = FP16_converter.Converter.int8_list_to_FP16(incoming_message_to_unsigned)
         msg.data = str(incoming_message)
         self.publisher_ROV.publish(msg)
         
@@ -55,4 +62,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
