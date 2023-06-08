@@ -25,7 +25,7 @@ class ProcessingNode(Node):
         # self.ROV_data
         # self.ox_data
 
-        # ROS 2 publisher and subscriber       
+        # ROS 2 publishers and subscribers   
         self.publisher_transmitter = self.create_publisher(String, f'/topic_transmission{modem_name}', 1)
         self.publisher_ROV = self.create_publisher(String, '/odom2', 1)
 
