@@ -21,8 +21,8 @@
 
 
 //Constructor parameters for Evo_janusXsdm.h
-std::string JANUS_PATH = "src/nodecomx_cpp_py/include/lib/janus-c-3.0.5/bin/";
-std::string SDM_PATH = "src/nodecomx_cpp_py/include/lib/sdmsh/";
+std::string JANUS_PATH = "src/evocomx/include/lib/janus-c-3.0.5/bin/";
+std::string SDM_PATH = "src/evocomx/include/lib/sdmsh/";
 std::string IP ="192.168.0.189";
 int JANUS_RX_PORT = 9920;
 int JANUS_TX_PORT = 9914;
@@ -34,7 +34,7 @@ std::string response;
 std::string comment;
 
 
-Evo_janusXsdm::connection modem;
+// Evo_janusXsdm::connection modem;
 
 class ComPubNode : public rclcpp::Node
 {
@@ -42,23 +42,27 @@ public:
     ComPubNode() : Node("Evo")
     {
 
-        Evo_janusXsdm::connection modem(IP, JANUS_PATH, SDM_PATH, JANUS_RX_PORT, JANUS_TX_PORT, STREAMFS);
+        // Evo_janusXsdm::connection modem(IP, JANUS_PATH, SDM_PATH, JANUS_RX_PORT, JANUS_TX_PORT, STREAMFS);
         // Configures modem and sets preamble
-        modem.sdmConfigAir();
-        std::this_thread::sleep_for(500ms);
-        modem.setPreamble();
-        std::this_thread::sleep_for(500ms);
+        // modem.sdmConfigAir();
+        // std::this_thread::sleep_for(500ms);
+        // modem.setPreamble();
+        // std::this_thread::sleep_for(500ms);
 
         // Create subscriber
         subscriber_ = this->create_subscription<std_msgs::msg::String>
         (
-            "topicA", 
+            "/topic_transmission", 
             10, 
             std::bind(&ComPubNode::callback, this, std::placeholders::_1)
         );
 
         // Create publisher
-        publisher_ = this->create_publisher<std_msgs::msg::String>("topicB", 10);
+        publisher_ = this->create_publisher<std_msgs::msg::String>
+        (
+            "/topic_reception", 
+            10
+        );
         timer_ = this->create_wall_timer
         (
             1000ms, 
@@ -85,7 +89,7 @@ private:
     void timer_callback()
     {
         // Listen to modem
-        std::array<std::string,4> responsFromFrame = modem.listenOnceRXsimple(response,timeout);
+        // std::array<std::string,4> responsFromFrame = modem.listenOnceRXsimple(response,timeout);
         // std::cout << "listen to modem\n";
 
         // Populate and publish message
@@ -99,7 +103,7 @@ private:
         if (update == 1) 
         {
             std::this_thread::sleep_for(500ms);
-            modem.startTX(modemMSG);
+            // modem.startTX(modemMSG);
             // std::cout << "Sent data to modem: " << modemMSG <<"\n";
             update = 0;
         }

@@ -6,5 +6,6 @@ communication_ws/src/evocomx/include/lib/sdmsh
 communication_ws/src/evocomx/include/lib/tools
 communication_ws/log
 communication_ws/install
+communication_ws/build
 sensors_ws/SUMS_2/log
 sensors_ws/SUMS_2/install

@@ -25,10 +25,10 @@ class ProcessingNode(Node):
         # self.ox_data
 
         # ROS 2 publisher and subscriber       
-        self.publisher_transmitter = self.create_publisher(String, f'/topic_transmission{modem_name}', 1)
+        self.publisher_transmitter = self.create_publisher(String, '/topic_transmission', 1)
         self.publisher_ROV = self.create_publisher(String, '/odom2', 1)
 
-        self.subscription_reception = self.create_subscription(String, f'/topic_reception{modem_name}', self.reception_callback, 1)
+        self.subscription_reception = self.create_subscription(String, '/topic_reception', self.reception_callback, 1)
         # self.subscription_sensor = self.create_subscription(String, 'oxygen_data', self.sensor_callback, 1)
         self.subscription_ROV = self.create_subscription(String, '/bluerov2_pid/bluerov2/observer/nlo/odom_ned', self.ROV_callback, 1)
         # self.subscription # To ignore unimportant errors. Recommended by ROS 2 documentation.

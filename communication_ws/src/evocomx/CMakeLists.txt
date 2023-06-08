@@ -15,18 +15,20 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 
+include_directories(include)
+
 # Create publisher executable
 add_executable(publisher src/publisher.cpp)
 ament_target_dependencies(publisher rclcpp std_msgs)
 
 # Create PubSub executable
-add_executable(pubsub src/working.cpp)
-ament_target_dependencies(pubsub rclcpp std_msgs)
+add_executable(comEvo src/working.cpp)
+ament_target_dependencies(comEvo rclcpp std_msgs)
 
 # Install Cpp executables
 install(TARGETS
   publisher
-  pubsub
+  comEvo
   DESTINATION lib/${PROJECT_NAME}
 )
 
