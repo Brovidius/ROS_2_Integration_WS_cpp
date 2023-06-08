@@ -1,16 +1,15 @@
-#!/usr/bin/env python3
+
 # Import required modules
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
-from unetpy import *
 import numpy as np
 
 # Import of homemade modules
-from nodecomx_cpp_py.nodecomx_cpp_py import algo as my_algo
-from nodecomx_cpp_py.nodecomx_cpp_py import FP16_converter as FP16_converter
+import nodecomx_cpp_py.algo as my_algo
+import nodecomx_cpp_py.FP16_converter as FP16_converter
 # This module contains our modem information which is used among all local nodes.
-from nodecomx_cpp_py.scripts.modem_info import *
+from nodecomx_cpp_py.modem_info import *
 
 # Define ProcessingNode class, which inherits from the Node class
 class ProcessingNode(Node):
@@ -23,37 +22,24 @@ class ProcessingNode(Node):
         # Type of message for publish/subscribe for ROS 2
         self.msg = String()
 
-        # ROS 2 publisher and subscriber       
-        self.publisher_ = self.create_publisher(String, f'topic_transmission{modem_name}', 1)
-        self.subscription = self.create_subscription(String, f'topic_reception{modem_name}', self.number_callback, 1)
-        self.subscription # To ignore unimportant errors. Recommended by ROS 2 documentation.
+        # ROS 2 publishers and subscribers   
+        self.publisher_transmitter = self.create_publisher(String, f'/topic_transmission{modem_name}', 1)
+        self.publisher_ROV = self.create_publisher(String, '/odom2', 1)
 
-        # Creating an instance of the NRC algorithm
-        self.nrc_algorithm = my_algo.NRC_algo()
+        self.subscription_reception = self.create_subscription(String, f'/topic_reception{modem_name}', self.reception_callback, 1)
+        # self.subscription_sensor = self.create_subscription(String, 'oxygen_data', self.sensor_callback, 1)
+        self.subscription_ROV = self.create_subscription(String, '/bluerov2_pid/bluerov2/observer/nlo/odom_ned', self.ROV_callback, 1)
+        # self.subscription # To ignore unimportant errors. Recommended by ROS 2 documentation.
 
-    # Callback function to process incoming data with the NRC algorithm from topic_reception
-    def number_callback(self, msg):
+    def reception_callback(self, msg):   
+        incoming_message = FP16_converter.Converter.int8_list_to_FP16(msg.data)
+        msg.data = str(incoming_message)
+        self.publisher_ROV.publish(msg)
         
-        # Converting the received message into an array of np.float16 values.
-        output_floats = FP16_converter.Converter.int8_list_to_FP16(msg.data)
-        numpy_float_array = np.array(output_floats)
-
-        # - Algorithm processing - 
-
-        # The variables are being updated inside the instance of the NRC algorithm module.
-        self.nrc_algorithm.data_reception(numpy_float_array)
-        # We are taking the updated variables for broadcasting
-        transmission_array = self.nrc_algorithm.data_transmission()
-
-        # Remove leading zeros from the transmission array
-        # and convert float zeros to integer zeros
-        removed_leading_zero = [int(num) if num == 0.0 else num for num  in transmission_array]
-
-        # Converting the numpy float16 array into list of unsigned int8 
-        msg.data = str(FP16_converter.Converter.FP16_list_to_int8(removed_leading_zero))
-
-        # Publishing to the transmission topic
-        self.publisher_.publish(msg)
+    def ROV_callback(self, msg):
+        converted_ROV_data = FP16_converter.Converter.FP16_list_to_int8(msg.data)
+        msg.data = str(converted_ROV_data)
+        self.publisher_transmitter.publish(msg)
 
 def main():
 
