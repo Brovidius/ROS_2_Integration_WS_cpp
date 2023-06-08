@@ -49,7 +49,7 @@ class  ReceiverNode(Node):
         self.timer = self.create_timer(1, self.publish_callback)
 
         # ROS 2 publisher
-        self.publisher_ = self.create_publisher(String, f'topic_reception{modem_name}', 1)
+        self.publisher_ = self.create_publisher(String, f'/topic_reception{modem_name}', 1)
         # Call the function
 
         self.mindummevariabel = 1

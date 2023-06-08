@@ -21,7 +21,7 @@ class TransmitterNode(Node):
         # Type of message for publish/subscribe for ROS 2
         self.msg = String()
         # ROS 2 subscriber
-        self.subscription = self.create_subscription(String, f'topic_transmission{modem_name}', self.subscribe_callback, 1)
+        self.subscription = self.create_subscription(String, f'/topic_transmission{modem_name}', self.subscribe_callback, 1)
         self.subscription  # To ignore unimportant errors. Recommended by ROS 2 documentation.
     
     def subscribe_callback(self, msg):
