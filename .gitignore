@@ -1,0 +1,6 @@
+.vscode
+communication_ws/src/evocomx/include/lib
+communication_ws/log
+communication_ws/install
+sensors_ws/SUMS_2/log
+sensors_ws/SUMS_2/install
