@@ -1,5 +1,9 @@
 .vscode
-communication_ws/src/evocomx/include/lib
+communication_ws/src/evocomx/include/lib/Evo_janusXsdm
+communication_ws/src/evocomx/include/lib/fftw
+communication_ws/src/evocomx/include/lib/janus-c-3.0.5
+communication_ws/src/evocomx/include/lib/sdmsh
+communication_ws/src/evocomx/include/lib/tools
 communication_ws/log
 communication_ws/install
 sensors_ws/SUMS_2/log
