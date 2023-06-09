@@ -25,10 +25,15 @@ ament_target_dependencies(publisher rclcpp std_msgs)
 add_executable(comEvo src/working.cpp)
 ament_target_dependencies(comEvo rclcpp std_msgs)
 
+# Create PubSub executable
+add_executable(comEvo2 src/working2.cpp)
+ament_target_dependencies(comEvo2 rclcpp std_msgs)
+
 # Install Cpp executables
 install(TARGETS
   publisher
   comEvo
+  comEvo2
   DESTINATION lib/${PROJECT_NAME}
 )
 

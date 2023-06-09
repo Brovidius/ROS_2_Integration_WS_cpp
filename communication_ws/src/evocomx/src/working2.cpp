@@ -1,7 +1,3 @@
-/* The structure of this code should work but it does not work with the modems
- * Can it work if we add more sleep to ensure that all processes run?
- */
-
 #include <iostream>
 #include <fstream>
 #include <stdlib.h>
@@ -27,38 +23,37 @@
 //Constructor parameters for Evo_janusXsdm.h
 std::string JANUS_PATH = "src/evocomx/include/lib/janus-c-3.0.5/bin/";
 std::string SDM_PATH = "src/evocomx/include/lib/sdmsh/";
-std::string IP ="192.168.0.189";
-int JANUS_RX_PORT = 9920;
-int JANUS_TX_PORT = 9914;
+std::string IP ="192.168.0.198";
+int JANUS_RX_PORT = 9921;
+int JANUS_TX_PORT = 9915;
 float STREAMFS = 250000.0;
 
 // RX varaibles
-int timeout = 100; // milliseconds [ms]
+int timeout = 500; // milliseconds [ms] should be low
 std::string response;
 std::string comment;
 int fd_listen;
 
 
-// Evo_janusXsdm::connection modem(IP, JANUS_PATH, SDM_PATH, JANUS_RX_PORT, JANUS_TX_PORT, STREAMFS);
+Evo_janusXsdm::connection modem(IP, JANUS_PATH, SDM_PATH, JANUS_RX_PORT, JANUS_TX_PORT, STREAMFS);
 
-class ComPubNode2 : public rclcpp::Node
+class ComPubNode : public rclcpp::Node
 {
 public:
-    ComPubNode2() : Node("Evo")
+    ComPubNode() : Node("Evo")
     {
-        // // Configures modem and sets preamble
-        // modem.sdmConfigAir();
-        // std::this_thread::sleep_for(500ms);
-        // modem.setPreamble();
-        // std::this_thread::sleep_for(500ms);
-        std::cout << "Preamble and shit\n";
+        // Configures modem and sets preamble
+        modem.sdmConfigAir();
+        std::this_thread::sleep_for(500ms);
+        modem.setPreamble();
+        std::this_thread::sleep_for(500ms);
 
         // Create subscriber
         subscriber_ = this->create_subscription<std_msgs::msg::String>
         (
             "/topic_transmission", 
             10, 
-            std::bind(&ComPubNode2::callback, this, std::placeholders::_1)
+            std::bind(&ComPubNode::callback, this, std::placeholders::_1)
         );
 
         // Create publisher
@@ -70,7 +65,7 @@ public:
         // timer_ = this->create_wall_timer
         // (
         //     100ms, 
-        //     std::bind(&ComPubNode2::timer_callback, this)
+        //     std::bind(&ComPubNode::timer_callback, this)
         // );
         RCLCPP_INFO(this->get_logger(), "Node has been started.");
         loop();
@@ -89,20 +84,17 @@ private:
         RCLCPP_INFO(this->get_logger(), "From Topic: '%s'", msg->data.c_str());
         modemMSG = msg->data;
         update = 1;
-        std::cout << "Hello from callback\n";
+
     }
 
     void loop ()
     {
-        // Listen to modem
-        // fd_listen = modem.startRX();
-        std::cout << "Start RX\n";
+       // Listen to modem
+        fd_listen = modem.startRX();
 
         while (rclcpp::ok())
         {
-            // modem.listenRX(fd_listen, response, timeout);
-            std::cout << "Listen RX\n";
-            std::this_thread::sleep_for(10000ms);
+            modem.listenRX(fd_listen, response, timeout);
             if (response != "NaN") 
             {
                 // Populate and publish message
@@ -112,26 +104,22 @@ private:
                 RCLCPP_INFO(this->get_logger(), "Publishing: '%s'", message.data.c_str());
                 publisher_->publish(message);
             }
-            std::this_thread::sleep_for(500ms);
             std::cout << "bool: " << update << std::endl;
             if (update == 1) 
             {
-                // modem.closePipeRX(fd_listen);
-                std::cout << "Close pipe\n";
+                modem.closePipeRX(fd_listen);
                 std::this_thread::sleep_for(500ms);
-                // modem.startTX(modemMSG);
-                std::cout << "Start TX\n";
+                modem.startTX(modemMSG);
                 std::this_thread::sleep_for(1000ms);
                 update = 0;
-                std::cout << "Start RX\n";
-                // fd_listen = modem.startRX();
+                fd_listen = modem.startRX();
 
             } 
             rclcpp::spin_some(this->get_node_base_interface());
         }
         std::cout << "ROS closing pipe\n";
-        // modem.closePipeRX(fd_listen);
-        // modem.stopRX();
+        modem.closePipeRX(fd_listen);
+        modem.stopRX();
     }
 
     // void timer_callback()
@@ -172,7 +160,10 @@ private:
 int main(int argc, char * argv[])
 {
     rclcpp::init(argc, argv);
-    rclcpp::spin(std::make_shared<ComPubNode2>());
+    rclcpp::spin(std::make_shared<ComPubNode>());
+    std::cout << "ROS closing pipe\n";
+    modem.closePipeRX(fd_listen);
+    modem.stopRX();
     rclcpp::shutdown();
     return 0;
 }
