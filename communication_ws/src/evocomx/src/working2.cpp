@@ -104,6 +104,8 @@ private:
                 RCLCPP_INFO(this->get_logger(), "Publishing: '%s'", message.data.c_str());
                 publisher_->publish(message);
             }
+
+            std::this_thread::sleep_for(200ms);
             std::cout << "bool: " << update << std::endl;
             if (update == 1) 
             {
